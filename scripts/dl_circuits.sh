@@ -4,7 +4,7 @@
 curl -LO https://iden3-circuits-bucket.s3.eu-west-1.amazonaws.com/latest.zip
 
 # Unzip the file into ./circuits
-unzip -d ./circuits latest.zip
+unzip -d ./src/circuits latest.zip
 
 # remove the zip file
 rm latest.zip

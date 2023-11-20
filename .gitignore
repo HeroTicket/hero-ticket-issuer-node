@@ -1,5 +1,5 @@
 node_modules
-circuits
+src/circuits/*
 dist
 
 .DS_Store
