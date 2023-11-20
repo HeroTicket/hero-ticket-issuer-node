@@ -1,7 +1,10 @@
 import express, { Express, Request, Response } from 'express';
+import connectDB from './src/loaders/mongo';
 
 const main = async () => {
     const app: Express = express();
+
+    await connectDB();
 
     const port = 3001;
 

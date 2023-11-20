@@ -3,5 +3,6 @@
     "contract_address": "0x134B1BE34911E39A8397ec6289782989729807a4",
     "circuits_path": "./circuits",
     "rpc_url": "",
-    "wallet_key": ""
+    "wallet_key": "",
+    "mongo_url": "mongodb://root:example@localhost:27017/"
 }
