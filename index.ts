@@ -1,6 +1,15 @@
 import express, { Express, Request, Response } from 'express';
 import initService from './src/loaders/service';
 
+interface CreateCredentialRequest {
+    did: string;
+    credentialSchema: string;
+    type: string;
+    credentialSubject: any;
+    expiration?: number;
+    revocationOpts?: any;
+}
+
 const main = async () => {
     const app: Express = express();
 
@@ -14,12 +23,30 @@ const main = async () => {
         res.send('Hello World!');
     });
 
+    app.get('/credential/:id', async (req: Request, res: Response) => {
+        const id = req.params.id;
+
+        const credential = await service.findCredentialById(id);
+
+        if (credential) {
+            res.status(200).json(credential);
+        } else {
+            res.status(404).json({ "error": "Credential not found" });
+        }
+    });
+
     app.post('/create-credential', async (req: Request, res: Response) => {
-        const { did } = req.body;
+        const body = req.body as CreateCredentialRequest;
 
-        const credential = await service.createCredential(did);
+        const { did, credentialSchema, type, credentialSubject, expiration, revocationOpts } = body;
 
-        res.status(200).json(credential);
+        const credential = await service.createCredential(did, credentialSchema, type, credentialSubject, expiration, revocationOpts);
+
+        if (!credential) {
+            return res.status(500).json({ "error": "Error creating credential" });
+        }
+
+        res.status(200).json({ "id": credential.id });
     });
 
     app.listen(port, () => {

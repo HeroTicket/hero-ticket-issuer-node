@@ -14,7 +14,7 @@ class Service {
     private _identityWallet: IIdentityWallet;
     private _rhsUrl: string;
     private _walletKey: string;
-    _adminDID: core.DID | undefined;
+    _issuerDID: core.DID | undefined;
 
     constructor(_dataStorage: IDataStorage, _credentialWallet: ICredentialWallet, _identityWallet: IIdentityWallet, _rhsUrl: string, _walletKey: string) {
         this._dataStorage = _dataStorage;
@@ -29,14 +29,14 @@ class Service {
 
         // check if the identity exists
         if (identities.length > 0) {
-            this._adminDID = core.DID.parse(identities[0].did);
+            this._issuerDID = core.DID.parse(identities[0].did);
             return this;
         }
 
         // create the identity
         const { did } = await this._createIdentity();
 
-        this._adminDID = did;
+        this._issuerDID = did;
 
         return this;
     }
@@ -55,18 +55,37 @@ class Service {
         return { did, credential };
     }
 
-    public async createCredential(rawUserDID: string): Promise<W3CCredential> {
-        const userDID = core.DID.parse(rawUserDID);
+    public async createCredential(rawDID: string, credentialSchema: string, type: string, credentialSubject: any, expiration?: number, revocationOpts?: any): Promise<W3CCredential> {
+        const userDID = core.DID.parse(rawDID);
 
-        const credentialRequest = this.createKYCAgeCredential(userDID);
+        const credentialRequest = this.createCredentialRequest(userDID, credentialSchema, type, credentialSubject, expiration, revocationOpts);
 
-        const credential = await this._identityWallet.issueCredential(this._adminDID!, credentialRequest);
+        const credential = await this._identityWallet.issueCredential(this._issuerDID!, credentialRequest);
 
         await this._credentialWallet.save(credential);
 
         return credential;
     }
 
+    public async findCredentialById(id: string): Promise<W3CCredential | undefined> {
+        return await this._credentialWallet.findById(id);
+    }
+
+    createCredentialRequest(did: core.DID, credentialSchema: string, type: string, credentialSubject: any, expiration?: number, revocationOpts?: any): CredentialRequest {
+        const credentialRequest: CredentialRequest = {
+            credentialSchema: credentialSchema,
+            type: type,
+            credentialSubject: credentialSubject,
+            expiration: expiration,
+            revocationOpts: revocationOpts || {
+                type: CredentialStatusType.Iden3ReverseSparseMerkleTreeProof,
+                id: this._rhsUrl,
+            }
+        };
+        return credentialRequest;
+    }
+
+    /*
     createKYCAgeCredential(did: core.DID) {
         const credentialRequest: CredentialRequest = {
             credentialSchema:
@@ -85,6 +104,7 @@ class Service {
         };
         return credentialRequest;
     }
+    */
 }
 
 export default Service;
