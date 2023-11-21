@@ -71,6 +71,18 @@ class Service {
         return await this._credentialWallet.findById(id);
     }
 
+    public async revokeCredential(id: string): Promise<number> {
+        const credential = await this._credentialWallet.findById(id)
+        if (!credential) {
+            return 0;
+        }
+
+        const nonce = await this._identityWallet.revokeCredential(this._issuerDID!, credential);
+        await this._credentialWallet.remove(id);
+
+        return nonce;
+    }
+
     createCredentialRequest(did: core.DID, credentialSchema: string, type: string, credentialSubject: any, expiration?: number, revocationOpts?: any): CredentialRequest {
         const credentialRequest: CredentialRequest = {
             credentialSchema: credentialSchema,
@@ -85,26 +97,7 @@ class Service {
         return credentialRequest;
     }
 
-    /*
-    createKYCAgeCredential(did: core.DID) {
-        const credentialRequest: CredentialRequest = {
-            credentialSchema:
-                'https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json/KYCAgeCredential-v3.json',
-            type: 'KYCAgeCredential',
-            credentialSubject: {
-                id: did.string(),
-                birthday: 19960424,
-                documentType: 99
-            },
-            expiration: 12345678888,
-            revocationOpts: {
-                type: CredentialStatusType.Iden3ReverseSparseMerkleTreeProof,
-                id: this._rhsUrl,
-            }
-        };
-        return credentialRequest;
-    }
-    */
+
 }
 
 export default Service;
