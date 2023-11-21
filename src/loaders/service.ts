@@ -38,7 +38,7 @@ const initMongoDataStorage = async (): Promise<IDataStorage> => {
     }
     const client = new MongoClient(url);
     await client.connect();
-    const db: Db = client.db('mongodb-sdk-example');
+    const db: Db = client.db('hero-ticket-issuer');
 
     let conf: EthConnectionConfig = defaultEthConnectionConfig;
     conf.contractAddress = config.CONTRACT_ADDRESS;
@@ -104,7 +104,9 @@ const initMongoDataStorageAndWallets = async (): Promise<{ dataStorage: IDataSto
 const initService = async (): Promise<Service> => {
     const { dataStorage, credentialWallet, identityWallet } = await initMongoDataStorageAndWallets();
 
-    return new Service(dataStorage, credentialWallet, identityWallet, config.RHS_URL, config.WALLET_KEY);
+    const service = new Service(dataStorage, credentialWallet, identityWallet, config.RHS_URL, config.WALLET_KEY);
+
+    return await service.init();
 }
 
 export default initService;
