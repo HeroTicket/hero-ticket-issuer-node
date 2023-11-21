@@ -6,4 +6,5 @@ export default {
     CIRCUITS_PATH: config.circuits_path,
     RPC_URL: config.rpc_url,
     WALLET_KEY: config.wallet_key,
+    MONGO_URL: config.mongo_url,
 };
