@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response, Router } from 'express';
 import { Logger } from 'winston';
 import Service from '../../service';
+import HttpException from '../utils/error';
 
 interface CreateCredentialRequest {
     did: string;
@@ -43,7 +44,7 @@ class Controller {
             }
         } catch (error) {
             this._logger.error(error);
-            next(error);
+            next(new HttpException(500, "Error retrieving credential"));
         }
     }
 
@@ -62,7 +63,7 @@ class Controller {
             res.status(200).json({ "id": credential.id });
         } catch (error) {
             this._logger.error(error);
-            next(error);
+            next(new HttpException(500, "Error creating credential"));
         }
     }
 
@@ -79,7 +80,7 @@ class Controller {
             res.status(200).json({ "nonce": nonce });
         } catch (error) {
             this._logger.error(error);
-            next(error);
+            next(new HttpException(500, "Error revoking credential"));
         }
     }
 }

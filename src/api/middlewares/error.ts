@@ -1,11 +1,14 @@
 import { NextFunction, Request, Response } from 'express';
 import { Logger } from 'winston';
+import HttpException from '../utils/error';
 
-// TODO: improve error handling
 const errorMiddleware = (logger: Logger) => {
-    return (err: any, req: Request, res: Response, next: NextFunction) => {
-        logger.error(err);
-        res.status(500).json({ error: err.message });
+    return (err: HttpException, req: Request, res: Response, next: NextFunction) => {
+        const status = err.status || 500;
+        const message = err.message || 'Something went wrong';
+
+        logger.error(`[${status}] ${message}`);
+        res.status(status).json({ status, message });
     }
 }
 
