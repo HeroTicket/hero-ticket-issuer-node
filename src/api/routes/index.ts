@@ -1,4 +1,4 @@
-import { Request, Response, Router } from 'express';
+import { NextFunction, Request, Response, Router } from 'express';
 import { Logger } from 'winston';
 import Service from '../../service';
 
@@ -30,19 +30,24 @@ class Controller {
         return router;
     }
 
-    private async getCredentialById(req: Request, res: Response) {
+    private async getCredentialById(req: Request, res: Response, next: NextFunction) {
         const id = req.params.id;
 
-        const credential = await this._service.findCredentialById(id);
+        try {
+            const credential = await this._service.findCredentialById(id);
 
-        if (credential) {
-            res.status(200).json(credential);
-        } else {
-            res.status(404).json({ "error": "Credential not found" });
+            if (credential) {
+                res.status(200).json(credential);
+            } else {
+                res.status(404).json({ "error": "Credential not found" });
+            }
+        } catch (error) {
+            this._logger.error(error);
+            next(error);
         }
     }
 
-    private async createCredential(req: Request, res: Response) {
+    private async createCredential(req: Request, res: Response, next: NextFunction) {
         const body = req.body as CreateCredentialRequest;
 
         try {
@@ -57,11 +62,11 @@ class Controller {
             res.status(200).json({ "id": credential.id });
         } catch (error) {
             this._logger.error(error);
-            res.status(500).json({ "error": "Error creating credential" });
+            next(error);
         }
     }
 
-    private async revokeCredential(req: Request, res: Response) {
+    private async revokeCredential(req: Request, res: Response, next: NextFunction) {
         const id = req.params.id;
 
         try {
@@ -74,7 +79,7 @@ class Controller {
             res.status(200).json({ "nonce": nonce });
         } catch (error) {
             this._logger.error(error);
-            res.status(500).json({ "error": "Error revoking credential" });
+            next(error);
         }
     }
 }

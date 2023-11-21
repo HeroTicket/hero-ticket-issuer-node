@@ -4,6 +4,7 @@ import initService from './service';
 import cors from '../api/middlewares/cors';
 import loggerMiddleware from '../api/middlewares/logger';
 import Controller from '../api/routes';
+import errorMiddleware from '../api/middlewares/error';
 
 const init = async (): Promise<Express> => {
     const app: Express = express();
@@ -11,6 +12,7 @@ const init = async (): Promise<Express> => {
     const service = await initService();
 
     app.use(loggerMiddleware(logger));
+    app.use(errorMiddleware(logger));
     app.use(cors);
     app.use(express.json());
 
