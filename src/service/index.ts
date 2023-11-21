@@ -4,7 +4,8 @@ import {
     IIdentityWallet,
     W3CCredential,
     CredentialStatusType,
-    core
+    core,
+    CredentialRequest
 } from '@0xpolygonid/js-sdk';
 
 class Service {
@@ -53,6 +54,38 @@ class Service {
 
         return { did, credential };
     }
+
+    public async createCredential(rawUserDID: string): Promise<W3CCredential> {
+        const userDID = core.DID.parse(rawUserDID);
+
+        const credentialRequest = this.createKYCAgeCredential(userDID);
+
+        const credential = await this._identityWallet.issueCredential(this._adminDID!, credentialRequest);
+
+        await this._credentialWallet.save(credential);
+
+        return credential;
+    }
+
+    createKYCAgeCredential(did: core.DID) {
+        const credentialRequest: CredentialRequest = {
+            credentialSchema:
+                'https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json/KYCAgeCredential-v3.json',
+            type: 'KYCAgeCredential',
+            credentialSubject: {
+                id: did.string(),
+                birthday: 19960424,
+                documentType: 99
+            },
+            expiration: 12345678888,
+            revocationOpts: {
+                type: CredentialStatusType.Iden3ReverseSparseMerkleTreeProof,
+                id: this._rhsUrl,
+            }
+        };
+        return credentialRequest;
+    }
 }
 
 export default Service;
+

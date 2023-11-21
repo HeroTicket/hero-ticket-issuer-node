@@ -4,14 +4,22 @@ import initService from './src/loaders/service';
 const main = async () => {
     const app: Express = express();
 
-    const service = await initService();
+    app.use(express.json());
 
-    console.log(service);
+    const service = await initService();
 
     const port = 3001;
 
     app.get('/', (req: Request, res: Response) => {
         res.send('Hello World!');
+    });
+
+    app.post('/create-credential', async (req: Request, res: Response) => {
+        const { did } = req.body;
+
+        const credential = await service.createCredential(did);
+
+        res.status(200).json(credential);
     });
 
     app.listen(port, () => {
