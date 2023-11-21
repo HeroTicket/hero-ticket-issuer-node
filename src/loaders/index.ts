@@ -2,6 +2,7 @@ import express, { Express, Request, Response } from 'express';
 import logger from './logger';
 import initService from './service';
 import cors from '../api/middlewares/cors';
+import loggerMiddleware from '../api/middlewares/logger';
 
 interface CreateCredentialRequest {
     did: string;
@@ -15,6 +16,7 @@ interface CreateCredentialRequest {
 const init = async (): Promise<Express> => {
     const app: Express = express();
 
+    app.use(loggerMiddleware(logger));
     app.use(cors);
     app.use(express.json());
 

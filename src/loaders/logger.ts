@@ -3,7 +3,7 @@ import DailyRotateFile from 'winston-daily-rotate-file';
 
 const { combine, timestamp, label, printf } = format;
 
-const logDir = process.cwd() + '/logs';
+const logDir = process.cwd() + '/src/logs';
 
 const logFormat = printf(({ level, message, label, timestamp }) => {
     return `${timestamp} [${label}] ${level}: ${message}`;
