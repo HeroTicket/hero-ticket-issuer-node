@@ -1,5 +1,8 @@
 node_modules
 src/circuits/*
+!src/circuits/.gitkeep
+src/logs/*
+!src/logs/.gitkeep
 dist
 
 .DS_Store
