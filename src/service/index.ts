@@ -14,7 +14,7 @@ class Service {
     private _identityWallet: IIdentityWallet;
     private _rhsUrl: string;
     private _walletKey: string;
-    _issuerDID: core.DID | undefined;
+    private _issuerDID: core.DID | undefined;
 
     constructor(_dataStorage: IDataStorage, _credentialWallet: ICredentialWallet, _identityWallet: IIdentityWallet, _rhsUrl: string, _walletKey: string) {
         this._dataStorage = _dataStorage;

@@ -1,5 +1,8 @@
 import express, { Express, Request, Response } from 'express';
-import initService from './src/loaders/service';
+import logger from './logger';
+import initService from './service';
+import cors from '../api/middlewares/cors';
+import loggerMiddleware from '../api/middlewares/logger';
 
 interface CreateCredentialRequest {
     did: string;
@@ -10,16 +13,16 @@ interface CreateCredentialRequest {
     revocationOpts?: any;
 }
 
-const main = async () => {
+const init = async (): Promise<Express> => {
     const app: Express = express();
 
+    app.use(loggerMiddleware(logger));
+    app.use(cors);
     app.use(express.json());
 
     const service = await initService();
 
-    const port = 3001;
-
-    app.get('/', (req: Request, res: Response) => {
+    app.get('/', (_: Request, res: Response) => {
         res.send('Hello World!');
     });
 
@@ -49,9 +52,7 @@ const main = async () => {
         res.status(200).json({ "id": credential.id });
     });
 
-    app.listen(port, () => {
-        console.log(`Server running on port ${port}`);
-    });
+    return app;
 }
 
-main();
+export default init;
