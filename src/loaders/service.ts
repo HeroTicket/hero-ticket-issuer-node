@@ -22,13 +22,15 @@ import {
     RHSResolver,
     OnChainResolver,
     AgentResolver,
-    AbstractPrivateKeyStore
+    AbstractPrivateKeyStore,
+    core
 } from '@0xpolygonid/js-sdk';
 import { MongoDataSourceFactory, MerkleTreeMongodDBStorage } from '@0xpolygonid/mongo-storage';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { MongoClient, Db } from 'mongodb';
 import config from '../config';
 import Service from '../service';
+import MongoPrivateKeyStore from '../storage';
 
 const initMongoDataStorage = async (): Promise<IDataStorage> => {
     let url = config.MONGO_URL;
@@ -42,7 +44,7 @@ const initMongoDataStorage = async (): Promise<IDataStorage> => {
 
     let conf: EthConnectionConfig = defaultEthConnectionConfig;
     conf.contractAddress = config.CONTRACT_ADDRESS;
-    conf.url = config.CONTRACT_ADDRESS;
+    conf.url = config.RPC_URL;
 
     let dataStorage = {
         credential: new CredentialStorage(
@@ -92,7 +94,12 @@ const initMongoDataStorageAndWallets = async (): Promise<{ dataStorage: IDataSto
     const credentialWallet = await initCredentialWallet(dataStorage);
     const memoryKeyStore = new InMemoryPrivateKeyStore();
 
-    const identityWallet = await initIdentityWallet(dataStorage, credentialWallet, memoryKeyStore);
+    const db = (await MongoClient.connect(config.MONGO_URL)).db('hero-ticket-issuer');
+
+    const mongoKeyStore = new MongoPrivateKeyStore(db);
+
+
+    const identityWallet = await initIdentityWallet(dataStorage, credentialWallet, mongoKeyStore);
 
     return {
         dataStorage,
