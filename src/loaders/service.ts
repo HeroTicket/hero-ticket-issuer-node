@@ -21,7 +21,11 @@ import {
     RHSResolver,
     OnChainResolver,
     AgentResolver,
-    AbstractPrivateKeyStore
+    AbstractPrivateKeyStore,
+    ICircuitStorage,
+    FSCircuitStorage,
+    ProofService,
+    IStateStorage
 } from '@0xpolygonid/js-sdk';
 import { MongoDataSourceFactory, MerkleTreeMongodDBStorage } from '@0xpolygonid/mongo-storage';
 import { MongoMemoryServer } from 'mongodb-memory-server';
@@ -104,12 +108,31 @@ const initMongoDataStorageAndWallets = async (db: Db): Promise<{ dataStorage: ID
     };
 }
 
+const initCircuitStorage = async (): Promise<ICircuitStorage> => {
+    return new FSCircuitStorage({
+        dirname: config.CIRCUITS_PATH,
+    })
+};
+
+const initProofService = async (identityWallet: IIdentityWallet,
+    credentialWallet: ICredentialWallet,
+    stateStorage: IStateStorage,
+    circuitStorage: ICircuitStorage): Promise<ProofService> => {
+    return new ProofService(identityWallet, credentialWallet, circuitStorage, stateStorage, {
+        ipfsGatewayURL: 'https://ipfs.io'
+    });
+};
+
 const initService = async (): Promise<Service> => {
     const db = await initMongoDB();
 
     const { dataStorage, credentialWallet, identityWallet } = await initMongoDataStorageAndWallets(db);
 
-    const service = new Service(dataStorage, credentialWallet, identityWallet, config.RHS_URL, config.WALLET_KEY);
+    const circuitStorage = await initCircuitStorage();
+
+    const proofService = await initProofService(identityWallet, credentialWallet, dataStorage.states, circuitStorage);
+
+    const service = new Service(dataStorage, credentialWallet, identityWallet, circuitStorage, proofService, config.RHS_URL, config.WALLET_KEY);
 
     return await service.init();
 }
