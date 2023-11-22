@@ -5,23 +5,32 @@ import {
     W3CCredential,
     CredentialStatusType,
     core,
-    CredentialRequest
+    CredentialRequest,
+    ICircuitStorage,
+    ProofService,
+    EthStateStorage
 } from '@0xpolygonid/js-sdk';
+import { ethers } from 'ethers';
 
 class Service {
     private _dataStorage: IDataStorage;
     private _credentialWallet: ICredentialWallet;
     private _identityWallet: IIdentityWallet;
+    private _circuitStorage: ICircuitStorage;
+    private _proofService: ProofService;
     private _rhsUrl: string;
-    private _walletKey: string;
+
     private _issuerDID: core.DID | undefined;
 
-    constructor(_dataStorage: IDataStorage, _credentialWallet: ICredentialWallet, _identityWallet: IIdentityWallet, _rhsUrl: string, _walletKey: string) {
+    constructor(_dataStorage: IDataStorage, _credentialWallet: ICredentialWallet,
+        _identityWallet: IIdentityWallet, _circuitStorage: ICircuitStorage,
+        _proofService: ProofService, _rhsUrl: string) {
         this._dataStorage = _dataStorage;
         this._credentialWallet = _credentialWallet;
         this._identityWallet = _identityWallet;
+        this._circuitStorage = _circuitStorage;
+        this._proofService = _proofService;
         this._rhsUrl = _rhsUrl;
-        this._walletKey = _walletKey;
     }
 
     public async init(): Promise<Service> {
@@ -64,6 +73,22 @@ class Service {
 
         await this._credentialWallet.save(credential);
 
+        /*
+        const creds = await this._credentialWallet.list();
+
+        const res = await this._identityWallet.addCredentialsToMerkleTree(creds, this._issuerDID!);
+
+        await this._identityWallet.publishStateToRHS(this._issuerDID!, this._rhsUrl);
+
+        const ethSigner = new ethers.Wallet(this._walletKey, (this._dataStorage.states as EthStateStorage).provider);
+
+        this._proofService.transitState(this._issuerDID!, res.oldTreeState, true, this._dataStorage.states, ethSigner).then((tx) => {
+            console.log(tx)
+        }).catch((err) => {
+            console.log(err)
+        });
+        */
+
         return credential;
     }
 
@@ -88,7 +113,7 @@ class Service {
             credentialSchema: credentialSchema,
             type: type,
             credentialSubject: credentialSubject,
-            expiration: expiration,
+            expiration: expiration || 0,
             revocationOpts: revocationOpts || {
                 type: CredentialStatusType.Iden3ReverseSparseMerkleTreeProof,
                 id: this._rhsUrl,
@@ -96,8 +121,6 @@ class Service {
         };
         return credentialRequest;
     }
-
-
 }
 
 export default Service;
