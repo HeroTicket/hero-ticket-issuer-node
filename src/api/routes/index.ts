@@ -27,6 +27,7 @@ class Controller {
         router.get('/:id', this.getCredentialById.bind(this));
         router.post('/', this.createCredential.bind(this));
         router.delete('/:id', this.revokeCredential.bind(this));
+        //router.post('/transit', this.transitState.bind(this));
 
         return router;
     }
@@ -60,6 +61,14 @@ class Controller {
                 return res.status(500).json({ "error": "Error creating credential" });
             }
 
+            /*
+            this._service.transitState([credential]).then((txId) => {
+                this._logger.info(`Credential ${credential.id} transit state txId: ${txId}`);
+            }).catch((err) => {
+                this._logger.error(err);
+            });
+            */
+
             res.status(200).json({ "id": credential.id });
         } catch (error) {
             this._logger.error(error);
@@ -83,6 +92,25 @@ class Controller {
             next(new HttpException(500, "Error revoking credential"));
         }
     }
+
+    /*
+    private async transitState(req: Request, res: Response, next: NextFunction) {
+        try {
+            const credentials = await this._service.getCredentials();
+
+            console.log(credentials);
+
+            const txId = await this._service.transitState(credentials.slice(1));
+
+
+
+            res.status(200).json({ "txId": txId });
+        } catch (error) {
+            this._logger.error(error);
+            next(new HttpException(500, "Error transiting state"));
+        }
+    }
+    */
 }
 
 export default Controller;

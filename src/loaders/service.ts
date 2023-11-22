@@ -132,7 +132,7 @@ const initService = async (): Promise<Service> => {
 
     const proofService = await initProofService(identityWallet, credentialWallet, dataStorage.states, circuitStorage);
 
-    const service = new Service(dataStorage, credentialWallet, identityWallet, circuitStorage, proofService, config.RHS_URL);
+    const service = new Service(dataStorage, credentialWallet, identityWallet, circuitStorage, proofService, config.RHS_URL, config.WALLET_KEY);
 
     return await service.init();
 }

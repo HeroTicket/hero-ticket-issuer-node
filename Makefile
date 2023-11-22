@@ -15,3 +15,9 @@ down:
 	@echo "Stopping containers..."
 	docker-compose down
 	@echo "Done."
+
+.PHONY: clean
+clean:
+	@echo "Stopping containers and removing data..."
+	docker-compose down -v
+	@echo "Done."

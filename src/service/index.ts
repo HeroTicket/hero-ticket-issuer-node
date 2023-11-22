@@ -19,18 +19,20 @@ class Service {
     private _circuitStorage: ICircuitStorage;
     private _proofService: ProofService;
     private _rhsUrl: string;
+    private _walletKey: string;
 
     private _issuerDID: core.DID | undefined;
 
     constructor(_dataStorage: IDataStorage, _credentialWallet: ICredentialWallet,
         _identityWallet: IIdentityWallet, _circuitStorage: ICircuitStorage,
-        _proofService: ProofService, _rhsUrl: string) {
+        _proofService: ProofService, _rhsUrl: string, _walletKey: string) {
         this._dataStorage = _dataStorage;
         this._credentialWallet = _credentialWallet;
         this._identityWallet = _identityWallet;
         this._circuitStorage = _circuitStorage;
         this._proofService = _proofService;
         this._rhsUrl = _rhsUrl;
+        this._walletKey = _walletKey;
     }
 
     public async init(): Promise<Service> {
@@ -39,6 +41,7 @@ class Service {
         // check if the identity exists
         if (identities.length > 0) {
             this._issuerDID = core.DID.parse(identities[0].did);
+
             return this;
         }
 
@@ -73,23 +76,11 @@ class Service {
 
         await this._credentialWallet.save(credential);
 
-        /*
-        const creds = await this._credentialWallet.list();
-
-        const res = await this._identityWallet.addCredentialsToMerkleTree(creds, this._issuerDID!);
-
-        await this._identityWallet.publishStateToRHS(this._issuerDID!, this._rhsUrl);
-
-        const ethSigner = new ethers.Wallet(this._walletKey, (this._dataStorage.states as EthStateStorage).provider);
-
-        this._proofService.transitState(this._issuerDID!, res.oldTreeState, true, this._dataStorage.states, ethSigner).then((tx) => {
-            console.log(tx)
-        }).catch((err) => {
-            console.log(err)
-        });
-        */
-
         return credential;
+    }
+
+    public async getCredentials(): Promise<W3CCredential[]> {
+        return await this._credentialWallet.list();
     }
 
     public async findCredentialById(id: string): Promise<W3CCredential | undefined> {
@@ -108,11 +99,31 @@ class Service {
         return nonce;
     }
 
+    public async transitState(credentials: W3CCredential[]): Promise<string> {
+        const issuer = await this._dataStorage.identity.getIdentity(this._issuerDID!.string());
+        if (!issuer) {
+            throw new Error('Issuer not found');
+        }
+
+        const res = await this._identityWallet.addCredentialsToMerkleTree(credentials, this._issuerDID!);
+
+        await this._identityWallet.publishStateToRHS(this._issuerDID!, this._rhsUrl);
+
+        const ethSigner = new ethers.Wallet(this._walletKey, (this._dataStorage.states as EthStateStorage).provider);
+
+        const txId = await this._proofService.transitState(this._issuerDID!, res.oldTreeState, issuer.isStateGenesis!, this._dataStorage.states, ethSigner);
+
+        return txId;
+    }
+
     createCredentialRequest(did: core.DID, credentialSchema: string, type: string, credentialSubject: any, expiration?: number, revocationOpts?: any): CredentialRequest {
         const credentialRequest: CredentialRequest = {
             credentialSchema: credentialSchema,
             type: type,
-            credentialSubject: credentialSubject,
+            credentialSubject: {
+                ...credentialSubject,
+                id: did.string(),
+            },
             expiration: expiration || 0,
             revocationOpts: revocationOpts || {
                 type: CredentialStatusType.Iden3ReverseSparseMerkleTreeProof,
