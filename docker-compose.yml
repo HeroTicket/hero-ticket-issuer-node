@@ -1,11 +1,23 @@
 version: '3.9'
 services:
-  mongo:
-    container_name: mongo
+  issuer-node:
+    container_name: issuer-node
+    build:
+      context: .
+      dockerfile: ./build/Dockerfile
+    restart: always
+    ports:
+      - 3001:3001
+    networks:
+      - issuer
+      - server
+
+  issuer-mongo:
+    container_name: issuer-mongo
     image: mongo:5.0.22
     restart: always
     ports:
-      - 27017:27017
+      - 27018:27017
     volumes:
       - mongo-data:/data/db
     environment:
@@ -20,4 +32,6 @@ volumes:
 
 networks:
   issuer:
+    driver: bridge
+  server:
     driver: bridge

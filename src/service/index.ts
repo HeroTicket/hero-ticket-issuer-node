@@ -72,7 +72,9 @@ class Service {
 
         const credentialRequest = this.createCredentialRequest(userDID, credentialSchema, type, credentialSubject, expiration, revocationOpts);
 
-        const credential = await this._identityWallet.issueCredential(this._issuerDID!, credentialRequest);
+        const credential = await this._identityWallet.issueCredential(this._issuerDID!, credentialRequest, {
+            ipfsNodeURL: credentialSchema.startsWith('ipfs://') ? 'https://ipfs.io' : undefined,
+        });
 
         await this._credentialWallet.save(credential);
 

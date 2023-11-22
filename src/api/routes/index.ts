@@ -69,7 +69,7 @@ class Controller {
             });
             */
 
-            res.status(200).json({ "id": credential.id });
+            res.status(201).json(credential);
         } catch (error) {
             this._logger.error(error);
             next(new HttpException(500, "Error creating credential"));

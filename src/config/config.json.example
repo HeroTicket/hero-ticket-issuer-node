@@ -1,8 +1,18 @@
 {
-    "rhs_url": "https://rhs-staging.polygonid.me",
-    "contract_address": "0x134B1BE34911E39A8397ec6289782989729807a4",
-    "circuits_path": "./src/circuits",
-    "rpc_url": "",
-    "wallet_key": "",
-    "mongo_url": "mongodb://root:example@localhost:27017/"
+     "development": {
+        "rhs_url": "https://rhs-staging.polygonid.me",
+        "contract_address": "0x134B1BE34911E39A8397ec6289782989729807a4",
+        "circuits_path": "./src/circuits",
+        "rpc_url": "",
+        "wallet_key": "",
+        "mongo_url": "mongodb://root:example@localhost:27018/"
+    },
+    "production": {
+        "rhs_url": "https://rhs-staging.polygonid.me",
+        "contract_address": "0x134B1BE34911E39A8397ec6289782989729807a4",
+        "circuits_path": "./src/circuits",
+        "rpc_url": "",
+        "wallet_key": "",
+        "mongo_url": "mongodb://root:example@issuer-mongo:27017/"
+    }
 }
